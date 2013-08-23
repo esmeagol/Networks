@@ -1,0 +1,34 @@
+syntax: ./server <ip> <port>
+
+
+Architecture:
+------------
+serve_tftp_clients (): It is the main flow-control function, it calls select on all available sockets in a loop,
+                       select returns on two conditions:
+			1) either of the sockets is ready to read data
+			2) select timeout happens
+			
+			after select returns, it
+			1) checks for retry_timeout for any of the clients, if for any client, timeout has passed the retry_interval, 
+			it resends the data...
+			2) calls recvfrom to fetch data from the socket ready to read, and based on which socket it is, performs actions like handling rrq 				or ack.
+
+
+tftp_rrq_handler (): processes a rrq request from a new client, adds new socket in fd_list, and sends 1st chunk of file_data, if the request was legitimate.
+
+tftp_ack_handler (): processes an ACK from client, and accordingly sends the next bunch of data to the client.
+
+encode (), decode () - functions to pack, unpack tftp packets recieved from and sent to the client.
+
+all defines in tftp.h
+g_ prefix used for global variables.
+
+
+
+Features:
+--------
+o Multiple client handling is supported and appropriately tested.
+o handling for loss of packets is there. (retransmission of data based on timers)
+o Send window has not been implemented.
+
+			
